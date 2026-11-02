@@ -5,129 +5,532 @@
     <base href="https://ois.istinye.edu.tr/">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="google" content="notranslate">
-    <title>OİS</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>OİS - Ders Seçme</title>
     
     <link href="/css/bootstrap.css" rel="stylesheet">
     <link href="/css/custom.css?5" rel="stylesheet">
     <link href="/css/new.css?16" rel="stylesheet">
-
-    <!--[if lt IE 9]>
-        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico?1">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
+    
     <script src="/js/jquery-1.8.0.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
-    <script src="/js/jquery.inputmask.js"></script>
-    <script src="/js/jquery.inputmask.extensions.js"></script>
-    <script src="/js/jquery.selectCombo.js"></script>
-    <script src="/js/jquery.blockUI.js"></script>
 
-    <script>
-        GUNCEL_SEZON = '2026-2027';
-        GUNCEL_DONEM = '1';
-    </script>
+    <style>
+        .sidr {
+            display: block !important;
+            position: fixed !important;
+            top: 0;
+            left: -300px;
+            width: 260px;
+            height: 100vh;
+            z-index: 9999;
+            overflow-y: auto;
+            transition: left 0.3s ease;
+            background-color: #2b353f;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+        }
+        .sidr.acik { left: 40px; }
+        
+        .session { float: right; margin-top: 15px; margin-right: 20px; color: #fff; font-size: 13px; }
+        .user-info { float: right; margin-top: 10px; margin-right: 20px; }
+        .navbar-left ul li a i { font-size: 24px; color: white; }
+        
+        /* Ders Seçim Modalı Özel Tasarımı */
+        .sube-label {
+            display: block; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            margin-bottom: 6px; 
+            border-radius: 4px; 
+            cursor: pointer;
+            background-color: #f9f9f9;
+            transition: background 0.2s;
+        }
+        .sube-label:hover { background-color: #eef1f5; }
+        .sube-label input { margin-right: 12px; margin-top: -2px; }
+    </style>
 </head>
-<body>
-    <p id="back-top"><a href="#top"><i class="icon-user icon-2x" style="color: #fff; margin-right: 5px;"></i></a></p>
+<body style="background-color: #e6e9ec;">
 
-    <!-- Yan Açılır Menüler (Sidr) -->
+    <!-- Sol Menüler -->
     <nav class="sidr" id="sidr-left8">
         <span>Ders İşlemleri</span>
-        <a href="/ogrenciler/ogrenci/slot">Slotlar</a>
-        <a href="/ogrenciler/derssecme/ogrindex">Ders Seçme</a>
-        <a href="/ogrenciler/derscekilme/derscekil">Dersten Çekilme Başvurusu</a>
-        <a href="/ogrenciler/ogrenci/hazirlikyazokulu">Hazırlık Yaz Okulu Kaydı</a>
-        <a href="/dersler/sectionislemleri/kontenjantakip">Kontenjan Takip</a>
-        <a href="/ogrenciler/staj/ilanbasvuru">SHMYO Uygulama Stajı</a>
-        <a href="/ogrenciler/derssecme/tekderssinavi">Tek Ders Sınavı</a>
-        <span style="height: 100px;">&nbsp;</span>
+        <a href="javascript:void(0)">Slotlar</a>
+        <a href="http://127.0.0.1:5000/ders-secme" id="link-ders-secme" style="font-weight: bold; color: #0084b4; background: #1a2229;">Ders Seçme</a>
+        <a href="javascript:void(0)">Dersten Çekilme Başvurusu</a>
+        <a href="javascript:void(0)">Hazırlık Yaz Okulu Kaydı</a>
+        <a href="javascript:void(0)">Kontenjan Takip</a>
+        <a href="javascript:void(0)">SHMYO Uygulama Stajı</a>
+        <a href="javascript:void(0)">Tek Ders Sınavı</a>
     </nav>
+    <nav class="sidr" id="sidr-left7"><span>Belgeler</span></nav>
+    <nav class="sidr" id="sidr-left9"><span>Diğer İşlemler</span></nav>
 
-    <nav class="sidr" id="sidr-left7">
-        <span>Belgeler</span>
-        <a href="/ogrenciler/belge/transkript">Transkript</a>
-        <a href="/ogrenciler/belge/ogrkarne">Karne</a>
-        <a href="/ogrenciler/belge/ogrdersprogrami">Ders Programı</a>
-        <a href="/ogrenciler/belge/devamsizlik">Devamsızlık</a>
-        <span style="height: 100px;">&nbsp;</span>
-    </nav>
-
-    <nav class="sidr" id="sidr-left9">
-        <span>Diğer İşlemler</span>
-        <a href="/ogrenciler/ogrenci/paroladegistirme">Parola Değiştirme</a>
-        <a href="/ogrenciler/belge/ogrtranskripthesap">GNO Hesaplama</a>
-        <a href="/fi/odeme/ogrenci">Finans Bilgileri</a>
-        <a href="/sistem/mesaj/mesajliste">Mesaj Sistemi</a>
-        <span style="height: 100px;">&nbsp;</span>
-    </nav>
-
-    <!-- Sol İkon Çubuğu -->
     <div class="navbar-left">
         <ul class="sortable list">
-            <li class="r3"><a id="left-menu8" href="#sidr-left8"><i class="icon-book icon-2x"></i></a></li>
-            <li class="r7"><a id="left-menu7" href="#sidr-left7"><i class="icon-file icon-2x"></i></a></li>
-            <li class="r8"><a id="left-menu9" href="#sidr-left9"><i class="icon-th icon-2x"></i></a></li>
+            <li class="r3"><a href="#sidr-left8"><i class="icon-book icon-2x"></i></a></li>
+            <li class="r7"><a href="#sidr-left7"><i class="icon-file icon-2x"></i></a></li>
+            <li class="r8"><a href="#sidr-left9"><i class="icon-th icon-2x"></i></a></li>
         </ul>
     </div>
 
-    <!-- Üst Navbar -->
+    <!-- Üst Bar -->
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner gray-back align">
-            <!-- Doğrudan yerel Flask rotasına yönlendiren dinamik logo bağlantısı -->
-            <a href="javascript:void(0)" onclick="window.location.href='/anasayfa?dogrulandi=1';" class="brand">
-                <img src="/images/uni_min_logo.png?1793393774" alt="İSÜ Logo" />
+            <a href="http://127.0.0.1:5000/anasayfa?dogrulandi=1" class="brand">
+                <img src="/images/uni_min_logo.png?1793300902" />
                 <h1>İSTİNYE ÜNİVERSİTESİ</h1>
                 <span>Ois</span>
             </a>
-
             <div class="main-search center dropdown">
-                <input type="text" class="input-xxlarge ara dropdown-toggle" id="uygulama_ara" placeholder="Uygulamada Ara ...">
+                <input type="text" class="input-xxlarge ara dropdown-toggle" placeholder="Uygulamada Ara ...">
                 <button type="button" class="ara-button"><i class="icon-search"></i></button>
             </div>
-
             <div class="session" id="session_countdown">
-                <i class="icon-time"></i> <b class="timer">19 dak. 58 sn.</b> sonra oturumunuz sonlanacaktır
+                <i class="icon-time"></i> <b class="timer" id="countdown-text">20 dak. 00 sn.</b> sonra oturumunuz sonlanacaktır
             </div>
-
             <div class="user-info">
                 <ul class="pull-left">
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="display: flex; align-items: center; text-decoration: none;">
-                            <i class="icon-chevron-down" style="margin-right: 6px;"></i>
-                            <!-- Nötr Kullanıcı İkonu -->
-                            <i class="icon-user icon-2x" style="color: #fff; margin-right: 5px;"></i>
+                    <li>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <i class="icon-chevron-down"></i> 
+                            <img src="/images/login/avatars_01.jpg" style="width: 33px; height: 33px; object-fit: cover; margin-left: 5px;" alt="Profil">
                         </a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a href="javascript:void(0)">Kullanıcı Profili</a></li>
-                            <li><a href="javascript:void(0)" onclick="window.location.href='/auth/logout';"><i class="icon-off"></i> Çıkış</a></li>
+                        <ul class="dropdown-menu">
+                            <li><a>MUHAMMET EMİN BAKIRCI (OGR - 2409111037)</a></li>
+                            <li><a href="/"><i class="icon-off"></i> Çıkış</a></li>
                         </ul>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
-    
-    <!-- Ana Gövde -->
+
+    <!-- Ana İçerik Alanı -->
     <div class="main">
-        <div class="text-left new-breadcrumb">
-            Ders Seçme
-        </div>
-        
-        <div id="container" class="transitions-enabled clearfix main-margin">
-            {% if acik_mi %}
-                <!-- Sistem Açıkken Gözükecek Alan -->
-                <div style="background: #fff; padding: 20px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                    <h4 style="margin-top: 0; color: #27ae60;">2026-2027 Güz Dönemi Ders Seçimi</h4>
-                    <p>Ders seçim ekranı simülasyonu aktif durumdadır.</p>
-                </div>
+        <div id="container" class="transitions-enabled clearfix main-margin" style="background-color: white; min-height: 85vh; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+            
+            {% if not acik_mi %}
+                <h3 style="color: #d9534f; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: normal;">Ders kayıt dönemi kapalıdır!</h3>
             {% else %}
-                <!-- Orijinal Kaynak Koddaki Hata/Uyarı Çıktısı -->
-                <font size="5" color="red">Ders seçme işlemi yapamazsınız...</font>
+                <!-- Öğrenci Bilgileri -->
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px; display: flex; justify-content: space-between; font-size: 13px; color: #434f5b; border: 1px solid #e9ecef;">
+                    <div style="width: 48%;">
+                        <table style="width: 100%;">
+                            <tr><td style="width:120px; color:#777;">Öğrenci No</td><td style="font-weight:bold;">2409111037</td></tr>
+                            <tr><td style="color:#777;">Adı</td><td style="font-weight:bold;">MUHAMMET EMİN</td></tr>
+                            <tr><td style="color:#777;">Soyadı</td><td style="font-weight:bold;">BAKIRCI</td></tr>
+                            <tr><td style="color:#777;">GNO</td><td style="font-weight:bold;">3.20</td></tr>
+                            <tr><td style="color:#777;">Dönem Sayı</td><td style="font-weight:bold;">5</td></tr>
+                            <tr><td style="color:#777;">Dönem Durumu</td><td style="font-weight:bold;">Devam</td></tr>
+                        </table>
+                    </div>
+                    <div style="width: 48%;">
+                        <table style="width: 100%;">
+                            <tr><td style="width:120px; color:#777;">Fakülte</td><td style="font-weight:bold;">Mühendislik ve Doğa Bilimleri Fakültesi</td></tr>
+                            <tr><td style="color:#777;">Program</td><td style="font-weight:bold;">YAZILIM MÜHENDİSLİĞİ (İngilizce)</td></tr>
+                            <tr><td style="color:#777;">Kayıt Türü</td><td style="font-weight:bold;">YKS</td></tr>
+                            <tr><td style="color:#777;">Sınıf</td><td style="font-weight:bold;">3</td></tr>
+                            <tr><td style="color:#777;">Statü</td><td style="font-weight:bold;">Normal</td></tr>
+                            <tr><td style="color:#777;">Danışman</td><td style="font-weight:bold;">Dr. Öğr. Üyesi X</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Kredi Limitleri -->
+                <div style="margin-bottom: 20px; font-size: 13px;">
+                    <span style="background-color: #d9edf7; color: #31708f; padding: 6px 12px; border-radius: 3px; font-weight: bold; margin-right: 10px;">Kredi Limiti: 40</span>
+                    <span style="background-color: #dff0d8; color: #3c763d; padding: 6px 12px; border-radius: 3px; font-weight: bold; margin-right: 10px;">Aldığınız Kredi: <span id="alinan-kredi">0</span></span>
+                    <span style="background-color: #f2dede; color: #a94442; padding: 6px 12px; border-radius: 3px; font-weight: bold;">Kalan Kredi: <span id="kalan-kredi">40</span></span>
+                </div>
+
+                <!-- Seçtiğiniz Dersler Tablosu -->
+                <div style="margin-bottom: 30px;">
+                    <h5 style="background-color: #34495e; color: white; margin: 0; padding: 10px; font-size: 14px;">Seçtiğiniz Dersler</h5>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #ddd;">
+                        <thead>
+                            <tr style="background-color: #eef1f5; text-align: left; color:#333;">
+                                <th style="padding: 10px; border: 1px solid #ddd;">Ders Kodu</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Ders Adı</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Kredi</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">AKTS</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Slot Dönemi</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Grup / Şube</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align:center;">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="secilen-dersler-body">
+                            <tr id="bos-satir">
+                                <td colspan="7" style="padding: 15px; text-align: center; color: #777;">Henüz ders seçmediniz.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Daha Önce Almadığınız Dersler Tablosu -->
+                <div style="margin-bottom: 30px;">
+                    <h5 style="background-color: #34495e; color: white; margin: 0; padding: 10px; font-size: 14px;">Daha Önce Almadığınız Dersler</h5>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #ddd;">
+                        <thead>
+                            <tr style="background-color: #eef1f5; text-align: left; color:#333;">
+                                <th style="padding: 10px; border: 1px solid #ddd;">Ders Kodu</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Ders Adı</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">AKTS</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Slot Dönemi</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #eee; font-weight:bold;">SWE209</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">Data Structures and Algorithms</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">6</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">5</td>
+                                <td style="padding: 10px; border: 1px solid #eee; text-align: center;">
+                                    <button onclick="subeSecimEkraniAc(this, 'SWE209')" style="background: #2c3e50; color: white; border: none; padding: 5px 12px; border-radius: 3px; cursor: pointer; font-weight:bold;">Dersi Al</button>
+                                </td>
+                            </tr>
+                            <tr style="background-color: #f9f9f9;">
+                                <td style="padding: 10px; border: 1px solid #eee; font-weight:bold;">MATH213</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">Numerical Methods for Engineers</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">5</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">5</td>
+                                <td style="padding: 10px; border: 1px solid #eee; text-align: center;">
+                                    <button onclick="subeSecimEkraniAc(this, 'MATH213')" style="background: #2c3e50; color: white; border: none; padding: 5px 12px; border-radius: 3px; cursor: pointer; font-weight:bold;">Dersi Al</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #eee; font-weight:bold;">MATH205</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">Differential Equations</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">6</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">5</td>
+                                <td style="padding: 10px; border: 1px solid #eee; text-align: center;">
+                                    <button onclick="subeSecimEkraniAc(this, 'MATH205')" style="background: #2c3e50; color: white; border: none; padding: 5px 12px; border-radius: 3px; cursor: pointer; font-weight:bold;">Dersi Al</button>
+                                </td>
+                            </tr>
+                            <tr style="background-color: #f9f9f9;">
+                                <td style="padding: 10px; border: 1px solid #eee; font-weight:bold;">COE203</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">Advanced Programming with Python</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">6</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">5</td>
+                                <td style="padding: 10px; border: 1px solid #eee; text-align: center;">
+                                    <button onclick="subeSecimEkraniAc(this, 'COE203')" style="background: #2c3e50; color: white; border: none; padding: 5px 12px; border-radius: 3px; cursor: pointer; font-weight:bold;">Dersi Al</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #eee; font-weight:bold;">EEE201</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">Digital Logic Design</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">6</td>
+                                <td style="padding: 10px; border: 1px solid #eee;">5</td>
+                                <td style="padding: 10px; border: 1px solid #eee; text-align: center;">
+                                    <button onclick="subeSecimEkraniAc(this, 'EEE201')" style="background: #2c3e50; color: white; border: none; padding: 5px 12px; border-radius: 3px; cursor: pointer; font-weight:bold;">Dersi Al</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Şube/Saat Seçim Modalı -->
+                <div id="sube-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
+                    <div style="background:white; width:600px; max-height:85vh; border-radius:6px; display:flex; flex-direction:column; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                        
+                        <div style="padding:15px 20px; font-size:16px; font-weight:bold; color:white; background:#2c3e50; border-radius: 6px 6px 0 0; display:flex; justify-content:space-between;">
+                            <span id="modal-ders-baslik">Ders Seçimi</span>
+                            <span onclick="document.getElementById('sube-modal').style.display='none'" style="cursor:pointer;">&times;</span>
+                        </div>
+                        
+                        <div id="modal-sube-listesi" style="padding:20px; overflow-y:auto; flex:1;">
+                            <!-- Seçenekler JS ile buraya yüklenecek -->
+                        </div>
+                        
+                        <div style="padding:15px 20px; border-top:1px solid #eaeaea; text-align:right; background:#f9f9f9; border-radius: 0 0 6px 6px;">
+                            <button onclick="document.getElementById('sube-modal').style.display='none'" style="padding:6px 15px; margin-right:10px; border:1px solid #ccc; background:#e0e0e0; border-radius:3px; cursor:pointer;">İptal</button>
+                            <button onclick="subeSeciminiOnayla()" style="padding:6px 15px; border:none; background:#27ae60; color:white; font-weight:bold; border-radius:3px; cursor:pointer;">Seçimi Tamamla ve Ekle</button>
+                        </div>
+                    </div>
+                </div>
+
             {% endif %}
+            
         </div>
     </div>
 
+    <script>
+        // Orijinal Excel dosyasından çekilen birebir veriler
+        const dersProgrami = {
+            'SWE209': {
+                ad: 'Data Structures and Algorithms', kredi: 3, akts: 6,
+                teorik: [
+                    { id: '1', gun: 'Pazartesi', bas: '12:10', bit: '14:40' },
+                    { id: '2', gun: 'Cuma', bas: '13:50', bit: '16:20' },
+                    { id: '3', gun: 'Pazartesi', bas: '14:40', bit: '17:10' }
+                ],
+                lab: [
+                    { id: '81', gun: 'Perşembe', bas: '15:30', bit: '17:10' },
+                    { id: '82', gun: 'Salı', bas: '08:50', bit: '10:30' },
+                    { id: '83', gun: 'Salı', bas: '10:30', bit: '12:10' },
+                    { id: '84', gun: 'Pazartesi', bas: '15:30', bit: '17:10' },
+                    { id: '85', gun: 'Pazartesi', bas: '09:40', bit: '11:20' },
+                    { id: '86', gun: 'Salı', bas: '14:40', bit: '16:20' }
+                ]
+            },
+            'MATH213': {
+                ad: 'Numerical Methods for Engineers', kredi: 3, akts: 5,
+                teorik: [
+                    { id: '1', gun: 'Perşembe', bas: '10:30', bit: '12:10' },
+                    { id: '2', gun: 'Cuma', bas: '10:30', bit: '12:10' }
+                ],
+                lab: [
+                    { id: '81', gun: 'Salı', bas: '15:30', bit: '17:10' },
+                    { id: '82', gun: 'Pazartesi', bas: '15:30', bit: '17:10' }
+                ]
+            },
+            'MATH205': {
+                ad: 'Differential Equations', kredi: 4, akts: 6,
+                teorik: [
+                    { id: '1', gun: 'Perşembe', bas: '11:20', bit: '13:50' },
+                    { id: '2', gun: 'Perşembe', bas: '08:50', bit: '11:20' },
+                    { id: '3', gun: 'Perşembe', bas: '14:40', bit: '17:10' }
+                ],
+                lab: []
+            },
+            'COE203': {
+                ad: 'Advanced Programming with Python', kredi: 3, akts: 6,
+                teorik: [
+                    { id: '1', gun: 'Çarşamba', bas: '12:10', bit: '14:40' },
+                    { id: '2', gun: 'Çarşamba', bas: '14:40', bit: '17:10' }
+                ],
+                lab: [
+                    { id: '81', gun: 'Pazartesi', bas: '08:00', bit: '09:40' },
+                    { id: '82', gun: 'Pazartesi', bas: '13:00', bit: '14:40' },
+                    { id: '83', gun: 'Perşembe', bas: '13:50', bit: '15:30' },
+                    { id: '84', gun: 'Çarşamba', bas: '08:00', bit: '09:40' }
+                ]
+            },
+            'EEE201': {
+                ad: 'Digital Logic Design', kredi: 3, akts: 6,
+                teorik: [
+                    { id: '1', gun: 'Perşembe', bas: '09:40', bit: '12:10' },
+                    { id: '2', gun: 'Perşembe', bas: '10:30', bit: '13:00' },
+                    { id: '3', gun: 'Perşembe', bas: '14:40', bit: '17:10' }
+                ],
+                lab: [
+                    { id: '81', gun: 'Cuma', bas: '11:20', bit: '13:00' },
+                    { id: '82', gun: 'Cuma', bas: '09:40', bit: '11:20' },
+                    { id: '83', gun: 'Cuma', bas: '14:40', bit: '16:20' },
+                    { id: '84', gun: 'Perşembe', bas: '14:40', bit: '16:20' },
+                    { id: '85', gun: 'Salı', bas: '08:50', bit: '10:30' },
+                    { id: '86', gun: 'Perşembe', bas: '11:20', bit: '13:00' },
+                    { id: '87', gun: 'Perşembe', bas: '09:40', bit: '11:20' },
+                    { id: '88', gun: 'Salı', bas: '10:30', bit: '12:10' },
+                    { id: '89', gun: 'Salı', bas: '12:10', bit: '13:50' }
+                ]
+            }
+        };
+
+        // Sol Menü Etkileşimleri
+        $(document).ready(function() {
+            $('.navbar-left .sortable li a').on('click', function(e) {
+                e.preventDefault();
+                var targetMenu = $(this).attr('href');
+                if ($(targetMenu).hasClass('acik')) {
+                    $(targetMenu).removeClass('acik');
+                } else {
+                    $('.sidr').removeClass('acik');
+                    $(targetMenu).addClass('acik');
+                }
+            });
+            $(document).mouseup(function(e) {
+                var sidebar = $(".sidr");
+                var icons = $(".navbar-left");
+                if (!sidebar.is(e.target) && sidebar.has(e.target).length === 0 && !icons.is(e.target) && icons.has(e.target).length === 0) {
+                    sidebar.removeClass('acik');
+                }
+            });
+        });
+
+        // Hali hazırda eklenmiş derslerin saatlerini tutan liste (Çakışma testi için)
+        let secilenProgram = [];
+        let seciliDersKodu = '';
+        let targetButton = null;
+        let toplamKredi = 0;
+
+        function subeSecimEkraniAc(btn, kod) {
+            seciliDersKodu = kod;
+            targetButton = btn;
+            let ders = dersProgrami[kod];
+            
+            document.getElementById('modal-ders-baslik').innerText = kod + ' - ' + ders.ad;
+            
+            let html = '<div style="margin-bottom: 15px; font-size:13px; color:#666;">Lütfen programınıza uygun Teorik ve (varsa) Laboratuvar şubelerini seçiniz.</div>';
+            
+            if (ders.teorik.length > 0) {
+                html += '<h6 style="color:#2980b9; font-weight:bold; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:5px;">Teorik Şube (Zorunlu)</h6>';
+                ders.teorik.forEach(t => {
+                    html += `
+                    <label class="sube-label">
+                        <input type="radio" name="teorik_secim" value="${t.id}"> 
+                        <b>Şube ${t.id}</b> &mdash; ${t.gun} (${t.bas} - ${t.bit})
+                    </label>`;
+                });
+            }
+            
+            if (ders.lab.length > 0) {
+                html += '<h6 style="color:#27ae60; font-weight:bold; margin-top:20px; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:5px;">Laboratuvar Şubesi (Zorunlu)</h6>';
+                ders.lab.forEach(l => {
+                    html += `
+                    <label class="sube-label">
+                        <input type="radio" name="lab_secim" value="${l.id}"> 
+                        <b>Şube ${l.id}</b> &mdash; ${l.gun} (${l.bas} - ${l.bit})
+                    </label>`;
+                });
+            }
+            
+            document.getElementById('modal-sube-listesi').innerHTML = html;
+            document.getElementById('sube-modal').style.display = 'flex';
+        }
+
+        // Zamanı matematiksel olarak kıyaslayabilmek için dakikaya çeviren fonksiyon
+        function saattenDakikaya(saatStr) {
+            let parcalar = saatStr.split(':');
+            return parseInt(parcalar[0]) * 60 + parseInt(parcalar[1]);
+        }
+
+        // İki ders saati aralığının çakışıp çakışmadığını denetleyen fonksiyon
+        function cakismaVarMi(ders1, ders2) {
+            if (ders1.gun !== ders2.gun) return false;
+            
+            let bas1 = saattenDakikaya(ders1.bas);
+            let bit1 = saattenDakikaya(ders1.bit);
+            let bas2 = saattenDakikaya(ders2.bas);
+            let bit2 = saattenDakikaya(ders2.bit);
+            
+            return (bas1 < bit2 && bas2 < bit1);
+        }
+
+        function subeSeciminiOnayla() {
+            let ders = dersProgrami[seciliDersKodu];
+            
+            let teorikSecilen = document.querySelector('input[name="teorik_secim"]:checked');
+            let labSecilen = document.querySelector('input[name="lab_secim"]:checked');
+            
+            if (ders.teorik.length > 0 && !teorikSecilen) {
+                alert("Lütfen bir Teorik ders şubesi seçiniz!");
+                return;
+            }
+            if (ders.lab.length > 0 && !labSecilen) {
+                alert("Lütfen bir Laboratuvar şubesi seçiniz!");
+                return;
+            }
+
+            // Seçilmek istenen saat objelerini topla
+            let yeniSecimler = [];
+            if (teorikSecilen) {
+                let tObj = ders.teorik.find(x => x.id === teorikSecilen.value);
+                yeniSecimler.push({ ...tObj, kod: seciliDersKodu, tur: 'Teorik' });
+            }
+            if (labSecilen) {
+                let lObj = ders.lab.find(x => x.id === labSecilen.value);
+                yeniSecimler.push({ ...lObj, kod: seciliDersKodu, tur: 'Laboratuvar' });
+            }
+
+            // Yeni seçilen Teorik ve Lab birbiriyle çakışıyor mu kontrol et
+            if (yeniSecimler.length === 2 && cakismaVarMi(yeniSecimler[0], yeniSecimler[1])) {
+                alert("Seçtiğiniz Teorik ve Laboratuvar saatleri birbiriyle çakışıyor! Lütfen farklı saatler seçin.");
+                return;
+            }
+
+            // Yeni seçimler, önceden alınan derslerle çakışıyor mu kontrol et
+            for (let i = 0; i < yeniSecimler.length; i++) {
+                for (let j = 0; j < secilenProgram.length; j++) {
+                    if (cakismaVarMi(yeniSecimler[i], secilenProgram[j])) {
+                        alert(`ÇAKIŞMA HATASI!\n\nSeçtiğiniz ${yeniSecimler[i].gun} ${yeniSecimler[i].bas}-${yeniSecimler[i].bit} saati, daha önce aldığınız "${secilenProgram[j].kod}" dersiyle çakışmaktadır. İşlem iptal edildi.`);
+                        return;
+                    }
+                }
+            }
+
+            // Hata yoksa dersleri sisteme ekle
+            secilenProgram.push(...yeniSecimler);
+            
+            let grupMetni = '';
+            if(teorikSecilen) grupMetni += teorikSecilen.value;
+            if(labSecilen) grupMetni += ' (Teo)<br>' + labSecilen.value + ' (Lab)';
+            
+            let tbody = document.getElementById("secilen-dersler-body");
+            let bosSatir = document.getElementById("bos-satir");
+            if(bosSatir) bosSatir.remove();
+            
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td style="padding: 10px; border: 1px solid #eee; font-weight:bold;">${seciliDersKodu}</td>
+                <td style="padding: 10px; border: 1px solid #eee;">${ders.ad}</td>
+                <td style="padding: 10px; border: 1px solid #eee;">${ders.kredi}</td>
+                <td style="padding: 10px; border: 1px solid #eee;">${ders.akts}</td>
+                <td style="padding: 10px; border: 1px solid #eee;">5</td>
+                <td style="padding: 10px; border: 1px solid #eee;">${grupMetni}</td>
+                <td style="padding: 10px; border: 1px solid #eee; text-align:center;">
+                    <button onclick="dersSil(this, '${seciliDersKodu}', ${ders.kredi})" style="background: #e74c3c; color: white; border: none; padding: 4px 10px; border-radius: 3px; cursor: pointer;">Sil</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            
+            toplamKredi += ders.kredi;
+            krediGuncelle();
+
+            targetButton.innerText = "Eklendi";
+            targetButton.style.background = "#95a5a6";
+            targetButton.disabled = true;
+            
+            document.getElementById('sube-modal').style.display = 'none';
+        }
+
+        function dersSil(btn, kod, kredi) {
+            // Silinen dersi çakışma programı listesinden çıkar
+            secilenProgram = secilenProgram.filter(ders => ders.kod !== kod);
+            
+            let sRow = btn.closest('tr');
+            sRow.remove();
+            
+            toplamKredi -= kredi;
+            krediGuncelle();
+            
+            // Dersi silince "Dersi Al" butonunu tekrar aktif hale getir
+            let buttons = document.querySelectorAll("button");
+            buttons.forEach(b => {
+                if (b.getAttribute("onclick") && b.getAttribute("onclick").includes(`'${kod}'`)) {
+                    b.innerText = "Dersi Al";
+                    b.style.background = "#2c3e50";
+                    b.disabled = false;
+                }
+            });
+
+            let tbody = document.getElementById("secilen-dersler-body");
+            if(tbody.children.length === 0) {
+                tbody.innerHTML = `<tr id="bos-satir"><td colspan="7" style="padding: 15px; text-align: center; color: #777;">Henüz ders seçmediniz.</td></tr>`;
+            }
+        }
+
+        function krediGuncelle() {
+            document.getElementById("alinan-kredi").innerText = toplamKredi;
+            document.getElementById("kalan-kredi").innerText = 40 - toplamKredi;
+        }
+
+        // 20 Dakikalık Geri Sayım
+        let timeLeft = 1200; 
+        const timerElement = document.getElementById("countdown-text");
+        const countdown = setInterval(function() {
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                window.location.href = "/"; 
+            } else {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                let formattedSeconds = seconds < 10 ? "0" + seconds : seconds;
+                if(timerElement) timerElement.innerHTML = minutes + " dak. " + formattedSeconds + " sn.";
+            }
+            timeLeft -= 1;
+        }, 1000);
+    </script>
 </body>
 </html>
