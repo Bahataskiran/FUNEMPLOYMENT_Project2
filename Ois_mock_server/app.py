@@ -113,7 +113,7 @@ def anasayfa():
 
 @app.route("/ders-secme")
 def ders_secme():
-    return render_template("ders_secme.html", acik_mi=SISTEM_ACIK_MI)
+    return render_template("derssecme.html", acik_mi=SISTEM_ACIK_MI)
 
 @app.route("/sistemi-degistir")
 def sistemi_degistir():

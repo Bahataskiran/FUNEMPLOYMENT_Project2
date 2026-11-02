@@ -1,80 +1,133 @@
-<!DOCTYPE html>
-<html lang="tr">
+<!doctype html>
+<!--[if lt IE 9]><html lang="en" class="no-js old-ie"><![endif]-->
+<html lang="en" class="no-js">
 <head>
-    <meta charset="UTF-8">
-    <title>İSÜ OİS - Ders Seçme</title>
     <base href="https://ois.istinye.edu.tr/">
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 20px auto; background: white; padding: 25px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-        .error-banner { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 4px; font-weight: bold; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
-        th { background-color: #2c343f; color: white; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .badge { background: #28a745; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
-    </style>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="google" content="notranslate">
+    <title>OİS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <link href="/css/bootstrap.css" rel="stylesheet">
+    <link href="/css/custom.css?5" rel="stylesheet">
+    <link href="/css/new.css?16" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico?1">
+    <script src="/js/jquery-1.8.0.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/jquery.inputmask.js"></script>
+    <script src="/js/jquery.inputmask.extensions.js"></script>
+    <script src="/js/jquery.selectCombo.js"></script>
+    <script src="/js/jquery.blockUI.js"></script>
+
+    <script>
+        GUNCEL_SEZON = '2026-2027';
+        GUNCEL_DONEM = '1';
+    </script>
 </head>
 <body>
+    <p id="back-top"><a href="#top"><i class="icon-user icon-2x" style="color: #fff; margin-right: 5px;"></i></a></p>
 
-<div class="container">
-    <h2>Ders Seçme İşlemleri (2026-2027 Güz)</h2>
+    <!-- Yan Açılır Menüler (Sidr) -->
+    <nav class="sidr" id="sidr-left8">
+        <span>Ders İşlemleri</span>
+        <a href="/ogrenciler/ogrenci/slot">Slotlar</a>
+        <a href="/ogrenciler/derssecme/ogrindex">Ders Seçme</a>
+        <a href="/ogrenciler/derscekilme/derscekil">Dersten Çekilme Başvurusu</a>
+        <a href="/ogrenciler/ogrenci/hazirlikyazokulu">Hazırlık Yaz Okulu Kaydı</a>
+        <a href="/dersler/sectionislemleri/kontenjantakip">Kontenjan Takip</a>
+        <a href="/ogrenciler/staj/ilanbasvuru">SHMYO Uygulama Stajı</a>
+        <a href="/ogrenciler/derssecme/tekderssinavi">Tek Ders Sınavı</a>
+        <span style="height: 100px;">&nbsp;</span>
+    </nav>
 
-    {% if not acik_mi %}
-        <!-- SİSTEM KAPALIYKEN ÇIKAN UYARI -->
-        <div class="error-banner">
-            Ders seçme işlemi yapamazsınız. Sistem henüz açılmamıştır veya kayıt döneminde değilsiniz.
+    <nav class="sidr" id="sidr-left7">
+        <span>Belgeler</span>
+        <a href="/ogrenciler/belge/transkript">Transkript</a>
+        <a href="/ogrenciler/belge/ogrkarne">Karne</a>
+        <a href="/ogrenciler/belge/ogrdersprogrami">Ders Programı</a>
+        <a href="/ogrenciler/belge/devamsizlik">Devamsızlık</a>
+        <span style="height: 100px;">&nbsp;</span>
+    </nav>
+
+    <nav class="sidr" id="sidr-left9">
+        <span>Diğer İşlemler</span>
+        <a href="/ogrenciler/ogrenci/paroladegistirme">Parola Değiştirme</a>
+        <a href="/ogrenciler/belge/ogrtranskripthesap">GNO Hesaplama</a>
+        <a href="/fi/odeme/ogrenci">Finans Bilgileri</a>
+        <a href="/sistem/mesaj/mesajliste">Mesaj Sistemi</a>
+        <span style="height: 100px;">&nbsp;</span>
+    </nav>
+
+    <!-- Sol İkon Çubuğu -->
+    <div class="navbar-left">
+        <ul class="sortable list">
+            <li class="r3"><a id="left-menu8" href="#sidr-left8"><i class="icon-book icon-2x"></i></a></li>
+            <li class="r7"><a id="left-menu7" href="#sidr-left7"><i class="icon-file icon-2x"></i></a></li>
+            <li class="r8"><a id="left-menu9" href="#sidr-left9"><i class="icon-th icon-2x"></i></a></li>
+        </ul>
+    </div>
+
+    <!-- Üst Navbar -->
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner gray-back align">
+            <!-- Doğrudan yerel Flask rotasına yönlendiren dinamik logo bağlantısı -->
+            <a href="javascript:void(0)" onclick="window.location.href='/anasayfa?dogrulandi=1';" class="brand">
+                <img src="/images/uni_min_logo.png?1793393774" alt="İSÜ Logo" />
+                <h1>İSTİNYE ÜNİVERSİTESİ</h1>
+                <span>Ois</span>
+            </a>
+
+            <div class="main-search center dropdown">
+                <input type="text" class="input-xxlarge ara dropdown-toggle" id="uygulama_ara" placeholder="Uygulamada Ara ...">
+                <button type="button" class="ara-button"><i class="icon-search"></i></button>
+            </div>
+
+            <div class="session" id="session_countdown">
+                <i class="icon-time"></i> <b class="timer">19 dak. 58 sn.</b> sonra oturumunuz sonlanacaktır
+            </div>
+
+            <div class="user-info">
+                <ul class="pull-left">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="display: flex; align-items: center; text-decoration: none;">
+                            <i class="icon-chevron-down" style="margin-right: 6px;"></i>
+                            <!-- Nötr Kullanıcı İkonu -->
+                            <i class="icon-user icon-2x" style="color: #fff; margin-right: 5px;"></i>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="javascript:void(0)">Kullanıcı Profili</a></li>
+                            <li><a href="javascript:void(0)" onclick="window.location.href='/auth/logout';"><i class="icon-off"></i> Çıkış</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
         </div>
-        <p style="color: #666; font-size: 13px;">(Test için yeni sekmede <code>/sistemi-degistir</code> adresine gidip sistemi açabilirsiniz.)</p>
-    {% else %}
-        <!-- SİSTEM AÇILDIĞINDA ÇIKAN DERS TABLOSU -->
-        <div style="background-color: #d4edda; color: #155724; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-            Sistem açık. Aşağıdaki dersleri programınıza ekleyebilirsiniz.
+    </div>
+    
+    <!-- Ana Gövde -->
+    <div class="main">
+        <div class="text-left new-breadcrumb">
+            Ders Seçme
         </div>
-
-        <table id="ders-tablosu">
-            <thead>
-                <tr>
-                    <th>Ders Kodu</th>
-                    <th>Ders Adı</th>
-                    <th>Kredi / ECTS</th>
-                    <th>Öğretim Elemanı</th>
-                    <th>Durum</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>COE203</td>
-                    <td>Advanced Programming with Python</td>
-                    <td>3 / 5</td>
-                    <td>Yiğit Bekir Kaya</td>
-                    <td><span class="badge">Açık</span></td>
-                </tr>
-                <tr>
-                    <td>SWE209</td>
-                    <td>Data Structures and Algorithms</td>
-                    <td>4 / 6</td>
-                    <td>Bölüm Öğretim Üyesi</td>
-                    <td><span class="badge">Açık</span></td>
-                </tr>
-                <tr>
-                    <td>MATH205</td>
-                    <td>Differential Equations</td>
-                    <td>3 / 5</td>
-                    <td>Matematik Bölümü</td>
-                    <td><span class="badge">Açık</span></td>
-                </tr>
-                <tr>
-                    <td>MATH213</td>
-                    <td>Numerical Methods for Engineers</td>
-                    <td>3 / 5</td>
-                    <td>Matematik Bölümü</td>
-                    <td><span class="badge">Açık</span></td>
-                </tr>
-            </tbody>
-        </table>
-    {% endif %}
-</div>
+        
+        <div id="container" class="transitions-enabled clearfix main-margin">
+            {% if acik_mi %}
+                <!-- Sistem Açıkken Gözükecek Alan -->
+                <div style="background: #fff; padding: 20px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h4 style="margin-top: 0; color: #27ae60;">2026-2027 Güz Dönemi Ders Seçimi</h4>
+                    <p>Ders seçim ekranı simülasyonu aktif durumdadır.</p>
+                </div>
+            {% else %}
+                <!-- Orijinal Kaynak Koddaki Hata/Uyarı Çıktısı -->
+                <font size="5" color="red">Ders seçme işlemi yapamazsınız...</font>
+            {% endif %}
+        </div>
+    </div>
 
 </body>
 </html>
