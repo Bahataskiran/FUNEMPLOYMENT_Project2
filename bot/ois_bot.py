@@ -8,6 +8,8 @@ import io
 import pytesseract
 import shutil
 
+from notifier import broadcast_notification
+
 # Optimizasyon motoru ve site ayarları
 from optimizer_engine import build_optimal_schedule
 from ois_config import ACTIVE_CONFIG
@@ -63,8 +65,7 @@ def solve_captcha_from_element(page):
     return clean_code
 
 def notify_user(title, message):
-    # Konsola bildirim mesajı yazdırır
-    print(f"\n📢 [BİLDİRİM] {title.upper()}: {message}\n")
+    broadcast_notification(title, message)
 
 # --- GİRİŞ İŞLEMLERİ ---
 def perform_login(page, max_retries=6):
@@ -307,7 +308,7 @@ def start_bot_session():
         available_courses_data = fetch_course_schedule(page)
 
         print("[*] Backtracking optimizasyon algoritması çalıştırılıyor...")
-        optimal_plan = build_optimal_schedule(available_courses_data, preference="minimum_days")
+        optimal_plan, schedule_table = build_optimal_schedule(available_courses_data, preference="minimum_days")
 
         if not optimal_plan:
             print("[-] HATA: Çakışmasız geçerli bir ders programı kombinasyonu bulunamadı!")
@@ -326,7 +327,8 @@ def start_bot_session():
         page.locator(sel["logout_toggle"]).click()
         page.locator(sel["logout_link"]).click()
         
-        notify_user("Kayıt Tamamlandı", "Tüm optimize dersler ve laboratuvarlar seçildi. Sistemden çıkış yapıldı.")
+        notify_message = f"Tüm dersler çakışmasız olarak sisteme işlendi!\n\nHaftalık Programınız:\n{schedule_table}"
+        notify_user("Kayıt Tamamlandı", notify_message)
         time.sleep(2)
         browser.close()
         

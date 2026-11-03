@@ -1,83 +1,46 @@
-# OİS Course Registration Bot & Schedule Optimizer 🎓🤖
+# OIS Course Registration Bot & Schedule Optimizer
 
-Bu proje, İstinye Üniversitesi Öğrenci İşleri Bilgi Sistemi (OİS) üzerinde ders kayıt dönemlerinde otomatik çakışmasız ders programı oluşturmayı ve ders seçimini otonom olarak gerçekleştirmeyi amaçlayan bir optimizasyon ve otomasyon botudur.
+An automated course registration tool and schedule optimizer designed for the Istinye University Student Information System (OIS). The project generates conflict-free course schedules during registration periods and handles the enrollment process autonomously.
 
-Proje bünyesinde geliştirme ve güvenli test süreçleri için birebir OİS arayüzünü ve işleyişini taklit eden yerel bir **Mock Flask Sunucusu** yer almaktadır.
+To allow safe development and testing without sending requests to the live university servers, the repository includes a local Flask mock server that replicates the actual OIS interface and workflow.
 
----
+## Features
 
-## 🚀 Temel Özellikler
+* **Local Mock Server:** A Flask-based simulation of the OIS web interface (`app.py`) to test login flows, captcha handling, and course selection offline.
+* **Captcha Solver:** Uses Pillow (PIL) image preprocessing filters alongside Tesseract OCR to automatically read and bypass login security codes.
+* **Browser Automation:** Built with Playwright to handle user authentication, poll the registration page until the system opens, enroll in the selected sections, and log out safely.
+* **Backtracking Schedule Optimizer:** Evaluates all theoretical and laboratory section combinations to guarantee zero time conflicts. Supports custom sorting criteria such as minimizing campus days (`minimum_days`) or creating compact daily schedules.
 
-- **Dahili Mock Sunucu:** Gerçek sisteme istek atmadan tüm senaryoları test edebilmek için Flask tabanlı sahte OİS simülasyonu.
-- **Güvenlik Kodu (Captcha) Çözümü:** Tesseract OCR ve PIL görüntü işleme filtreleri kullanılarak OİS güvenlik kodlarını otomatik ayrıştırır.
-- **Otonom Tarayıcı Otomasyonu:** Playwright tabanlı altyapısıyla sisteme giriş yapar, ders kayıt ekranının açılmasını periyodik olarak bekler ve açıldığı anda optimize edilen şubeleri seçip oturumu güvenle kapatır.
-- **Backtracking Optimizasyon Motoru:** Derslerin teorik ve laboratuvar şubelerini tarayarak sıfır zaman çakışması garantili kombinasyonları türetir, kampüse en az gün gitme (`minimum_days`) veya en kompakt program kriterlerine göre en uygun takvimi belirler.
+## Installation
 
+### 1. Install Dependencies
 
----
-
-## 🛠️ Kurulum
-
-### 1. Gereksinimlerin Yüklenmesi
-Python 3.10+ kurulu olduğundan emin olun ve bağımlılıkları yükleyin:
+Make sure Python 3.10+ is installed, then install the required packages and Playwright browser binaries:
 
 ```bash
 pip install -r requirements.txt
-playwright install chromium
-
-2. Tesseract OCR KurulumuBotun güvenlik kodlarını çözebilmesi için sisteminizde Tesseract OCR kurulu olmalıdır:   Windows: Tesseract-OCR Windows Installer üzerinden C:\Program Files\Tesseract-OCR dizinine kurun.   Linux: sudo apt-get install tesseract-ocrmacOS: brew install tesseract
-
------- Kullanım Kılavuzu ------
-
-Proje iki farklı modda çalıştırılabilir: Yerel Mock Test Ortamı ve Gerçek OİS (Production) Ortamı.
-
-Senaryo A: Yerel Mock Sunucuda Test Etme
-
-1. Mock Sunucuyu Başlatın:
-Terminalde Flask uygulamasını çalıştırın:
-python app.py
-
-2. Çalışma Ortamını Doğrulayın:
-ois_config.py dosyasında ENV değişkeninin "MOCK" olduğundan emin olun:
-ENV = "MOCK"
-
-3. Optimizasyon Kriterini Belirleyin (İsteğe Bağlı):
-ois_bot.py içinde yer alan build_optimal_schedule fonksiyonuna dilediğiniz önceliği parametre olarak verebilirsiniz.
-
-4. Botu Çalıştırın:
-Yeni bir terminal penceresi açıp botu başlatın:
-python ois_bot.py
-Bot otomatik olarak tarayıcıyı açacak, güvenlik kodunu çözüp sisteme giriş yapacak ve ders kayıt ekranının açılmasını beklemeye başlayacaktır.
-
-5. Ders Kayıtlarını Simüle Edin (Sistemi Açma/Kapama):
-Ders kayıt ekranı varsayılan olarak "Kapalı" durumdadır. app.py dosyasında şu satırdan ders kayıt sistemini açık hale getirebilirsiniz:
-SISTEM_ACIK_MI = False
-Sistem açıldığı anda bot durumu algılayacak, çakışmasız en iyi ders programını hesaplayacak ve dersleri sırayla seçerek oturumu kapatacaktır.
-
-Senaryo B: Gerçek OİS Sisteminde Çalıştırma
-1. ois_config.py dosyasını açın ve ortamı değiştirin:
-ENV = "PRODUCTION"
-
-2. ois_bot.py içerisindeki giriş fonksiyonunda (perform_login) yer alan öğrenci numarası ve şifre alanlarını kendi OİS giriş bilgilerinizle güncelleyin.
-
-3.Botu başlatın
-python ois_bot.py
-
-
-PROJE YAPISI
-├── app.py                 # Test amaçlı geliştirilmiş yerel Flask Mock sunucusu
-├── ois_bot.py             # Giriş, Captcha çözümü ve ders seçimini yöneten Playwright botu
-├── ois_config.py          # Mock ve Production ortamlarına ait selector ve URL ayarları
-├── optimizer_engine.py    # Çakışma kontrolü ve backtracking optimizasyon motoru
-├── requirements.txt       # Proje bağımlılıkları
-├── templates/             # OİS arayüz simülasyonu için HTML şablonları
+playwright install chromium                            2. Install Tesseract OCRTesseract OCR must be installed on your system for the captcha solver to work:Windows: Download and run the Tesseract-OCR Windows Installer (default path: C:\Program Files\Tesseract-OCR).Linux: sudo apt-get install tesseract-ocrmacOS: brew install tesseractUsageThe project can be run in two modes: the local mock testing environment or the live OIS environment.Scenario A: Testing on the Local Mock ServerStart the Mock Server:
+Run the Flask application in your terminal:Bashpython app.py
+Check the Environment Config:
+Make sure the ENV variable inside ois_config.py is set to "MOCK":PythonENV = "MOCK"
+Set Optimization Criteria (Optional):
+Pass your preferred scheduling priority as a parameter to the build_optimal_schedule function in ois_bot.py.Run the Bot:
+Open a new terminal window and start the bot:Bashpython ois_bot.py
+The bot will launch a browser, solve the captcha, log in, and wait for the course registration period to open.Simulate Registration Opening:
+Course registration is closed by default. You can open the system by changing the following flag to True in app.py (or by visiting the /sistemi-degistir route in your browser)[cite: 7]:   PythonSISTEM_ACIK_MI = False
+Once opened, the bot detects the change, computes the conflict-free schedule, selects the courses, and logs out.Scenario B: Running on the Live OIS SystemOpen ois_config.py and switch the environment to production:PythonENV = "PRODUCTION"
+Update the student ID and password fields inside the perform_login function in ois_bot.py with your actual OIS credentials.Start the bot:Bashpython ois_bot.py
+Project StructurePlaintext├── app.py                 # Local Flask mock server for testing
+├── ois_bot.py             # Playwright bot handling login, captcha, and enrollment
+├── ois_config.py          # Environment URLs and DOM selectors (Mock vs. Production)
+├── optimizer_engine.py    # Backtracking schedule generator and clash detector
+├── requirements.txt       # Python dependencies
+├── templates/             # HTML templates replicating the OIS frontend
 │   ├── login.html
 │   ├── mainmenu.html
 │   └── derssecme.html
 └── README.md
-
-Group Members
-Mehmet Baha Taşkıran (2409011013) - @Bahataskiran
+ContributorsMehmet Baha Taşkıran (2409011013) - @Bahataskiran
 Muhammet Emin Bakırcı (2409111037) - @Eminbakircii
 Yunus Çerkezoğlu (2409011003) - @yunuscerkezoglu
 Mehmet Ali Saray (2509011054) - @MehmetAliS480

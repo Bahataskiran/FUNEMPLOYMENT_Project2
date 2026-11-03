@@ -119,7 +119,7 @@ def build_optimal_schedule(available_courses_dict, preference="minimum_days"):
     
     if not all_valid_schedules:
         print("[-] Uyarı: Hiçbir çakışmasız program kombinasyonu bulunamadı!")
-        return None
+        return None, ""
 
     print(f"[*] Toplam {len(all_valid_schedules)} farklı çakışmasız haftalık program bulundu.")
 
@@ -152,4 +152,47 @@ def build_optimal_schedule(available_courses_dict, preference="minimum_days"):
         else:
             actionable_plan[code]["teorik"] = sube_id
 
-    return actionable_plan
+    table_str = format_schedule_table(best_plan)    
+
+    return actionable_plan, table_str
+
+def format_schedule_table(schedule_list):
+    """
+    Seçilen en iyi ders programı listesini gün ve saat sırasına göre 
+    hizalı bir ASCII tablosuna dönüştürür.
+    """
+    if not schedule_list:
+        return ""
+
+    headers = ["Ders Kodu", "Tür", "Şube", "Gün", "Saat"]
+    col_widths = [10, 8, 6, 12, 13]
+
+    # Günleri haftalık sıraya göre dizmek için
+    day_weights = {"Pazartesi": 1, "Salı": 2, "Çarşamba": 3, "Perşembe": 4, "Cuma": 5}
+    
+    # Listeyi gün ve başlangıç saatine göre sırala
+    sorted_sessions = sorted(
+        schedule_list, 
+        key=lambda x: (day_weights.get(x.get("gun"), 9), parse_time_to_minutes(x.get("baslangic")))
+    )
+
+    rows = []
+    for s in sorted_sessions:
+        code = s["ders_kodu"]
+        sube = str(s["sube"])
+        is_lab = int(sube) >= LAB_SECTION_THRESHOLD
+        tur = "Lab" if is_lab else "Teorik"
+        gun = s["gun"]
+        saat = f"{s['baslangic']}-{s['bitis']}"
+        rows.append([code, tur, sube, gun, saat])
+
+    line = "+" + "+".join(["-" * (w + 2) for w in col_widths]) + "+"
+    header_str = "|" + "|".join([f" {h:<{w}} " for h, w in zip(headers, col_widths)]) + "|"
+    
+    table_lines = [line, header_str, line]
+    for r in rows:
+        row_str = "|" + "|".join([f" {val:<{w}} " for val, w in zip(r, col_widths)]) + "|"
+        table_lines.append(row_str)
+    table_lines.append(line)
+
+    return "\n".join(table_lines)
