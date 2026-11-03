@@ -1,4 +1,6 @@
 __pycache__/
+*.pyc
+*monitor_state.json
 *.py[cod]
 *$py.class
 venv/
