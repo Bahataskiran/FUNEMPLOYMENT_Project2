@@ -68,10 +68,12 @@ def notify_user(title, message):
 
 # --- GİRİŞ İŞLEMLERİ ---
 def perform_login(page, max_retries=6):
-    # Captcha hatalarına karşı giriş işlemini döngüyle dener
     sel = ACTIVE_CONFIG["SELECTORS"]
+    
     for attempt in range(1, max_retries + 1):
         print(f"[*] Giriş denemesi ({attempt}/{max_retries})...")
+        
+        # 1. Giriş alanlarını doldur
         page.locator(sel["username"]).fill("2409111037")
         page.locator(sel["password"]).fill("sifre1")
         
@@ -79,17 +81,72 @@ def perform_login(page, max_retries=6):
         page.locator(sel["captcha_input"]).fill(code)
         page.locator(sel["login_button"]).click()
         
-        # Hata uyarısı çıkarsa modalı kapatıp yeni captcha ister
-        time.sleep(1.0)
+        # 2. Sonucu bekle
         error_el = page.locator(sel["error_modal"])
-        if error_el.is_visible():
-            print("[-] Giriş başarısız, kod yenileniyor...")
-            error_el.locator(sel["error_close"]).click()
-            page.locator(sel["captcha_refresh"]).click()
+        success_indicator = page.locator(sel.get("logout_toggle", ".user-info, .navbar-inner .dropdown-toggle"))
+
+        try:
+            # Hata penceresi ekranda belirdi mi?
+            error_el.wait_for(state="visible", timeout=3500)
+            print("[-] Güvenlik kodu veya şifre hatalı, modal kapatılıyor...")
+            
+            # Modal kapatma butonuna tıkla (Kapat butonu veya X butonu)
+            try:
+                close_btn = error_el.locator("button:has-text('Kapat'), .close")
+                if close_btn.is_visible():
+                    close_btn.first.click()
+            except Exception:
+                pass
+
+            # Bootstrap animasyonunun takılma ihtimaline karşı JavaScript ile modalı ve arkaplan perdesini temizle
+            page.evaluate("""() => {
+                if (typeof $ !== 'undefined') {
+                    $('#errorModal').modal('hide');
+                    $('.modal-backdrop').remove();
+                }
+            }""")
+            
+            # Modalın tamamen gizlendiğinden emin ol
+            try:
+                error_el.wait_for(state="hidden", timeout=2000)
+            except Exception:
+                pass
+
+            time.sleep(0.5)
+
+            # Captcha ve parola alanını temizle, yeni captcha al
+            try:
+                page.locator(sel["captcha_refresh"]).click()
+            except Exception:
+                pass
+
+            page.locator(sel["captcha_input"]).fill("")
             time.sleep(1.0)
-        else:
-            print("[+] Giriş başarılı!")
-            return True
+            continue  # Sonraki denemeye geç
+            
+        except Exception:
+            # Hata penceresi çıkmadıysa başarılı girişi doğrula
+            is_logged_in = False
+            
+            try:
+                success_indicator.wait_for(state="visible", timeout=4000)
+                is_logged_in = True
+            except Exception:
+                # Giriş butonu sayfadan kalktıysa veya URL değiştiyse
+                if not page.locator(sel["login_button"]).is_visible():
+                    is_logged_in = True
+
+            if is_logged_in:
+                print("[+] Giriş başarılı!")
+                return True
+            else:
+                print("[-] Giriş doğrulanamadı, sayfa yenilenerek tekrar deneniyor...")
+                try:
+                    page.locator(sel["captcha_refresh"]).click()
+                except Exception:
+                    page.reload()
+                time.sleep(1.0)
+
     return False
 
 def extract_course_slots_from_page(page):
@@ -183,7 +240,7 @@ def start_bot_session():
     course_reg_url = f"{base_url}{ACTIVE_CONFIG['COURSE_REG_PATH']}"
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, slow_mo=1600)
+        browser = p.chromium.launch(headless=False, slow_mo=0)
         context = browser.new_context()
         page = context.new_page()
 
@@ -200,7 +257,7 @@ def start_bot_session():
             # Varsa adres güncelleme/onay pop-up'ını geç
             devam_btn = page.locator(sel["verify_continue"])
             try:
-                if devam_btn.is_visible(timeout=3000):
+                if devam_btn.is_visible(timeout=800):
                     devam_btn.click()
                     print("[+] Adres doğrulama adımı geçildi.")
             except Exception:

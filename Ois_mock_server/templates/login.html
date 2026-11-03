@@ -6,15 +6,10 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>OİS</title>
-    <meta name="description" content="">
-    <meta name="keywords" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
-    <!-- Orijinal CSS Dosyaları -->
     <link href="/css/bootstrap-2.3.2.css" rel="stylesheet">
     <link href="/css/new.css?1" rel="stylesheet">
-    
-    <!-- Göz simgesinin sorunsuz yüklenmesi için Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
 
     <!--[if lt IE 9]>
@@ -25,8 +20,6 @@
     <style> 
         .login-head button { width: 100px; } 
         .mezun { padding-top:13px; padding-bottom:14px; width:70px; } 
-        
-        /* Orijinal göz simgesi hizalama ve renk stili */
         .icon-eye-open, .icon-eye-close {
             cursor: pointer;
             color: #4e5d6c;
@@ -38,13 +31,14 @@
 </head>
 <body>
     <div class="login-form">
-        <form method="POST" id="loginForm" action="http://127.0.0.1:5000/">
+        <!-- Orijinal sistemde action POST edilen mevcut URL'dir -->
+        <form method="POST" id="loginForm" action="">
             <div class="shaky" style="text-align: center; position: relative;">
-    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: bold; color: #b94a48; background-color: #f2dede; border: 1px solid #eed3d7; border-radius: 3px; padding: 1px 8px; white-space: nowrap; z-index: 10;">
-        --------MOCK--------
-    </span>
-    <img src="/images/auth_min_logo.png">
-</div>
+                <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: bold; color: #b94a48; background-color: #f2dede; border: 1px solid #eed3d7; border-radius: 3px; padding: 1px 8px; white-space: nowrap; z-index: 10;">
+                    --------MOCK--------
+                </span>
+                <img src="/images/auth_min_logo.png">
+            </div>
             <div class="shaky">
                 <div class="login-head">
                     <label>Kullanıcı Grubu</label>
@@ -61,14 +55,13 @@
                     <label class="show2">Kullanıcı Adı</label>
                     <input type="text" class="input-xlarge" id="kullanici_adi" name="kullanici_adi" required>
 
-                    <!-- Orijinal Parola ve Göz Simgesi Satırı -->
-                   <label>Parola</label>
-<div style="position: relative; width: 100%;">
-    <input type="password" class="input-xlarge" id="kullanici_sifre" name="kullanici_sifre" required style="width: 246px !important; margin-bottom: 0;">
-    <i onclick="sifreGoster()" class="icon-eye-open icon-2x" style="position: absolute; left: 263px; top: 2px; cursor: pointer;"></i>
-</div>
-<div class="clearfix"></div>
-<br/>
+                    <label>Parola</label>
+                    <div style="position: relative; width: 100%;">
+                        <input type="password" class="input-xlarge" id="kullanici_sifre" name="kullanici_sifre" required style="width: 246px !important; margin-bottom: 0;">
+                        <i id="eye-icon" onclick="sifreGoster()" class="icon-eye-open icon-2x" style="position: absolute; left: 263px; top: 2px; cursor: pointer;"></i>
+                    </div>
+                    <div class="clearfix"></div>
+                    <br/>
                     <label class="pull-left" style="width: 300px;">
                         Güvenlik Resmi
                         <a class="pull-right" href="javascript:void(0)" onclick="refreshCaptcha()">
@@ -77,7 +70,7 @@
                     </label>
 
                     <div class="pull-left" style="width: 100px;">
-                        <img id="img_captcha" src="http://127.0.0.1:5000/auth/captcha" style="width: 100px; height: 43px; border-radius: 4px;" alt="Güvenlik Kodu">
+                       <img id="img_captcha" src="http://127.0.0.1:5000/auth/captcha" style="width: 100px; height: 43px; border-radius: 4px;" alt="Güvenlik Kodu">"Güvenlik Kodu">
                     </div>
 
                     <div class="pull-left" style="width: 90px; padding-left: 10px;">
@@ -102,7 +95,7 @@
         </form>
     </div>
 
-    <!-- Hata Modalı -->
+    <!-- Hata Modalı (Orijinal OİS ID ve class yapısı) -->
     <div id="errorModal" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true" style="border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
         <div class="modal-header" style="border-bottom: 1px solid #eee; position: relative; padding: 15px 20px;">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true" 
@@ -110,7 +103,7 @@
             <h4 style="color: #d9534f; margin: 0; font-weight: bold; font-size: 16px;">Hata</h4>
         </div>
         <div class="modal-body" style="padding: 25px 20px; font-size: 14px; color: #333;">
-            <p style="margin: 0;">{{ hata }}</p>
+            <p id="errorModalText" style="margin: 0;">{{ hata if hata else '' }}</p>
         </div>
         <div class="modal-footer" style="background-color: #f5f5f5; border-top: 1px solid #ddd; padding: 10px 20px; border-radius: 0 0 4px 4px;">
             <button class="btn" data-dismiss="modal" aria-hidden="true" style="padding: 5px 18px; border-radius: 4px;">Kapat</button>
@@ -121,3 +114,34 @@
     <script src="/js/bootstrap.min.js"></script>
 
     <script>
+       function refreshCaptcha() {
+    var captchaImg = document.getElementById('img_captcha');
+    if (captchaImg) {
+        captchaImg.src = "http://127.0.0.1:5000/auth/captcha?t=" + new Date().getTime();
+    }
+}
+
+        function sifreGoster() {
+            var passInput = document.getElementById('kullanici_sifre');
+            var eyeIcon = document.getElementById('eye-icon');
+            if (!passInput) return;
+
+            if (passInput.type === "password") {
+                passInput.type = "text";
+                if (eyeIcon) eyeIcon.className = "icon-eye-close icon-2x";
+            } else {
+                passInput.type = "password";
+                if (eyeIcon) eyeIcon.className = "icon-eye-open icon-2x";
+            }
+        }
+
+        // JS bloğu içine Jinja tagi koymadan, DOM üzerinden kontrol ederek modalı tetikliyoruz
+        $(document).ready(function() {
+            var msgEl = document.getElementById('errorModalText');
+            if (msgEl && msgEl.innerText.trim().length > 0) {
+                $('#errorModal').modal('show');
+            }
+        });
+    </script>
+</body>
+</html>

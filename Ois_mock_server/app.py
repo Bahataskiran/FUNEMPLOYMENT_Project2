@@ -6,7 +6,6 @@ from PIL import Image, ImageDraw, ImageFont
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 
 app = Flask(__name__)
-# Session (oturum) verilerini saklamak için gereklidir
 app.secret_key = "ois_guvenlik_anahtari_123"
 
 # Ders seçim durumu
@@ -25,13 +24,11 @@ def generate_captcha_image(text):
     image = Image.new("RGB", (width, height), color=(252, 252, 252))
     draw = ImageDraw.Draw(image)
 
-    # 1. Noktasal gürültü (Noise)
     for _ in range(110):
         nx = random.randint(0, width - 1)
         ny = random.randint(0, height - 1)
         draw.point((nx, ny), fill=(165, 165, 165))
 
-    # 2. Dalgalı çizgi
     wave_offset = random.randint(20, 24)
     freq = random.uniform(0.08, 0.11)
     for x in range(width):
@@ -41,14 +38,12 @@ def generate_captcha_image(text):
             if y + 1 < height:
                 draw.point((x, y + 1), fill=(160, 160, 160))
 
-    # 3. İkinci çizgi
     draw.line(
         [(0, random.randint(20, 32)), (width, random.randint(18, 28))],
         fill=(170, 170, 170),
         width=1
     )
 
-    # 4. Font yükleme
     try:
         font = ImageFont.truetype("arialbd.ttf", 23)
     except IOError:
@@ -57,7 +52,6 @@ def generate_captcha_image(text):
         except IOError:
             font = ImageFont.load_default()
 
-    # 5. Metni blok halinde ortalayarak çizdirme (Harf çakışmasını engeller)
     bbox = draw.textbbox((0, 0), text, font=font)
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
@@ -74,14 +68,14 @@ def generate_captcha_image(text):
 
 @app.route("/auth/captcha")
 def auth_captcha():
-    """Orijinal OİS endpoint'i: Yeni kod üretir, session'a yazar ve resmi döndürür"""
     chars = string.ascii_lowercase + "23456789"
     captcha_text = "".join(random.choices(chars, k=4))
     session["captcha_text"] = captcha_text
-    
     return send_file(generate_captcha_image(captcha_text), mimetype="image/png")
 
+# Orijinal sistemde hem / hem de /auth/login girişe bakar
 @app.route("/", methods=["GET", "POST"])
+@app.route("/auth/login", methods=["GET", "POST"])
 def login():
     hata_mesaji = None
 
@@ -91,14 +85,17 @@ def login():
         kod = request.form.get("captcha", "").strip().lower()
         dogru_kod = session.get("captcha_text", "").lower()
 
-        # Doğrulama kontrolü (Session'daki güvenlik kodu ile eşleşme)
-        bilgiler_dogru = (
-            kod == dogru_kod and 
-            kullanici in EKIP_UYELERI and 
-            EKIP_UYELERI[kullanici] == sifre
-        )
+        # Terminalde değerleri anlık kontrol et
+        print(f"[*] Girilen Kullanıcı: '{kullanici}', Şifre: '{sifre}'")
+        print(f"[*] Girilen Captcha: '{kod}' <---> Beklenen Captcha: '{dogru_kod}'")
 
-        if bilgiler_dogru:
+        # Kontrol kriterleri
+        captcha_gecerli = (kod == dogru_kod and kod != "")
+        kullanici_var = kullanici in EKIP_UYELERI
+        sifre_gecerli = kullanici_var and (EKIP_UYELERI[kullanici] == sifre)
+
+        if captcha_gecerli and kullanici_var and sifre_gecerli:
+            session["user"] = kullanici
             return redirect(url_for("anasayfa", dogrulandi=0))
         else:
             hata_mesaji = "Kullanıcı Doğrulama Başarısız!!--"
@@ -106,12 +103,21 @@ def login():
 
     return render_template("login.html")
 
+# Çıkış Rotaları: Session'ı temizler ve giriş sayfasına yönlendirir
+@app.route("/logout")
+@app.route("/auth/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 @app.route("/anasayfa")
 def anasayfa():
     dogrulandi = request.args.get("dogrulandi", "0") == "1"
     return render_template("mainmenu.html", dogrulandi=dogrulandi)
 
+# Orijinal OİS yolu ile Mock rotasını eşitledik
 @app.route("/ders-secme")
+@app.route("/ogrenci/ders-kayit")
 def ders_secme():
     return render_template("derssecme.html", acik_mi=SISTEM_ACIK_MI)
 
