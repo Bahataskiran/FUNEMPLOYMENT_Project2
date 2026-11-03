@@ -27,7 +27,7 @@ CHECK_INTERVAL_SECONDS = 120  # Kontrol periyodu (saniye)
 
 # --- SİSTEM DURUMU TAKİBİ ---
 def load_saved_state():
-    # Kayıtlı son kontrol durumunu dosyadan okur
+    """Kayıtlı son kontrol durumunu dosyadan okur."""
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r", encoding="utf-8") as f:
@@ -37,27 +37,26 @@ def load_saved_state():
     return {"registration_open": False}
 
 def save_state(is_open):
-    # Ders seçimi açıldı mı bilgisini zaman damgasıyla kaydeder
+    """Ders seçimi açık/kapalı durumunu UTC zaman damgasıyla kaydeder (Slide 39 & 52)."""
     now_utc = datetime.now(timezone.utc).isoformat()
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump({"registration_open": is_open, "last_check": now_utc}, f, indent=2)
 
 # --- CAPTCHA ÇÖZÜMÜ ---
 def solve_captcha_from_element(page):
-    # Güvenlik kodunun ekran görüntüsünü alır
+    """Güvenlik kodunu kırpıp filtrelerden geçirerek OCR ile çözer."""
     captcha_img_el = page.locator("#img_captcha")
     expect(captcha_img_el).to_be_visible()
     
     img_bytes = captcha_img_el.screenshot()
     img = Image.open(io.BytesIO(img_bytes))
     
-    # OCR doğruluğunu artırmak için resmi büyütüp siyah-beyaza çevirir
+    # OCR doğruluğunu artırmak için resmi büyütüp ikili (binary) formata çevirir
     w, h = img.size
     img_resized = img.resize((w * 3, h * 3), Image.Resampling.BICUBIC)
     gray = img_resized.convert('L')
     bw = gray.point(lambda p: 0 if p < 150 else 255, '1')
     
-    # Sadece harf ve rakamları okuyacak şekilde Tesseract çalıştırır
     custom_config = r'--psm 8 -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyz23456789'
     raw_text = pytesseract.image_to_string(bw, config=custom_config)
     clean_code = "".join(raw_text.split()).strip().lower()
@@ -69,12 +68,16 @@ def notify_user(title, message):
 
 # --- GİRİŞ İŞLEMLERİ ---
 def perform_login(page, max_retries=6):
+    """
+    Playwright State Machine ile giriş yapar, modal ve hataları 
+    bounded assertion ile denetler (Slide 25 & 48).
+    """
     sel = ACTIVE_CONFIG["SELECTORS"]
     
     for attempt in range(1, max_retries + 1):
         print(f"[*] Giriş denemesi ({attempt}/{max_retries})...")
         
-        # 1. Giriş alanlarını doldur
+        # 1. Giriş alanlarını doldur (Act)
         page.locator(sel["username"]).fill("2409111037")
         page.locator(sel["password"]).fill("sifre1")
         
@@ -82,16 +85,14 @@ def perform_login(page, max_retries=6):
         page.locator(sel["captcha_input"]).fill(code)
         page.locator(sel["login_button"]).click()
         
-        # 2. Sonucu bekle
+        # 2. Sonucu bekle (Observe & Defend)
         error_el = page.locator(sel["error_modal"])
         success_indicator = page.locator(sel.get("logout_toggle", ".user-info, .navbar-inner .dropdown-toggle"))
 
         try:
-            # Hata penceresi ekranda belirdi mi?
             error_el.wait_for(state="visible", timeout=3500)
             print("[-] Güvenlik kodu veya şifre hatalı, modal kapatılıyor...")
             
-            # Modal kapatma butonuna tıkla (Kapat butonu veya X butonu)
             try:
                 close_btn = error_el.locator("button:has-text('Kapat'), .close")
                 if close_btn.is_visible():
@@ -99,7 +100,6 @@ def perform_login(page, max_retries=6):
             except Exception:
                 pass
 
-            # Bootstrap animasyonunun takılma ihtimaline karşı JavaScript ile modalı ve arkaplan perdesini temizle
             page.evaluate("""() => {
                 if (typeof $ !== 'undefined') {
                     $('#errorModal').modal('hide');
@@ -107,7 +107,6 @@ def perform_login(page, max_retries=6):
                 }
             }""")
             
-            # Modalın tamamen gizlendiğinden emin ol
             try:
                 error_el.wait_for(state="hidden", timeout=2000)
             except Exception:
@@ -115,7 +114,6 @@ def perform_login(page, max_retries=6):
 
             time.sleep(0.5)
 
-            # Captcha ve parola alanını temizle, yeni captcha al
             try:
                 page.locator(sel["captcha_refresh"]).click()
             except Exception:
@@ -123,17 +121,15 @@ def perform_login(page, max_retries=6):
 
             page.locator(sel["captcha_input"]).fill("")
             time.sleep(1.0)
-            continue  # Sonraki denemeye geç
+            continue  # Retry Budget dahilinde yeni deneme
             
         except Exception:
-            # Hata penceresi çıkmadıysa başarılı girişi doğrula
             is_logged_in = False
             
             try:
                 success_indicator.wait_for(state="visible", timeout=4000)
                 is_logged_in = True
             except Exception:
-                # Giriş butonu sayfadan kalktıysa veya URL değiştiyse
                 if not page.locator(sel["login_button"]).is_visible():
                     is_logged_in = True
 
@@ -151,10 +147,7 @@ def perform_login(page, max_retries=6):
     return False
 
 def extract_course_slots_from_page(page):
-    """
-    Sayfadaki 'dersProgrami' JS objesini okuyup 
-    optimizasyon motoruna uygun sözlük yapısına çevirir.
-    """
+    """Sayfadaki 'dersProgrami' nesnesini normalize eder."""
     raw_db = page.evaluate("() => typeof dersProgrami !== 'undefined' ? dersProgrami : null")
     
     if not raw_db:
@@ -162,7 +155,6 @@ def extract_course_slots_from_page(page):
 
     formatted_courses = {}
 
-    # Ham ders verisini teorik ve lab bloklarına ayırarak düzenler
     for code, info in raw_db.items():
         formatted_courses[code] = {"teorik": [], "lab": []}
         
@@ -187,49 +179,34 @@ def extract_course_slots_from_page(page):
     return formatted_courses
 
 def fetch_course_schedule(page):
-    """
-    Aktif konfigürasyona göre ders verisini çeker (Mock veya Gerçek DOM).
-    """
-    sel = ACTIVE_CONFIG
-    if sel["DATA_SOURCE"] == "JS_OBJECT":
-        return extract_course_slots_from_page(page)
-    else:
-        return extract_course_slots_from_page(page)
-    
+    return extract_course_slots_from_page(page)
+
 # --- OTOMATİK DERS SEÇİMİ ---
 def enroll_course_with_sections(page, course_code, sections):
-    """
-    Açılan seçim modalı üzerinden belirlenen teorik ve lab şubelerini işaretleyip onaylar.
-    """
+    """Açılan seçim modalında belirlenen teorik ve lab şubelerini seçer."""
     print(f"[*] '{course_code}' için şube seçim ekranı açılıyor...")
     
-    # 1. 'Dersi Al' butonuna tıkla
     take_btn = page.locator(f"button[onclick*=\"subeSecimEkraniAc(this, '{course_code}')\"]")
     take_btn.click()
     
-    # Seçim penceresinin açılmasını bekle
     sube_modal = page.locator("#sube-modal")
     expect(sube_modal).to_be_visible()
     
-    # 2. Uygun teorik şubeyi işaretle
     if "teorik" in sections:
         teorik_val = sections["teorik"]
         teorik_radio = sube_modal.locator(f"input[name='teorik_secim'][value='{teorik_val}']")
         teorik_radio.check()
         print(f"    -> Teorik Şube {teorik_val} işaretlendi.")
 
-    # 3. Varsa uygun laboratuvar şubesini işaretle
     if "lab" in sections:
         lab_val = sections["lab"]
         lab_radio = sube_modal.locator(f"input[name='lab_secim'][value='{lab_val}']")
         lab_radio.check()
         print(f"    -> Lab Şube {lab_val} işaretlendi.")
 
-    # 4. Seçimi kaydet
     confirm_btn = sube_modal.locator("button:has-text('Seçimi Tamamla ve Ekle')")
     confirm_btn.click()
     
-    # 5. Butonun 'Eklendi'ye döndüğünü doğrula
     expect(take_btn).to_have_text("Eklendi")
     print(f"[✓] {course_code} başarıyla programa eklendi.")
 
@@ -268,24 +245,17 @@ def start_bot_session():
             page.goto(course_reg_url)
 
             system_opened = False
-            session_start_time = time.time()
 
-            # Sayfa açılana kadar belirli aralıklarla F5 atan bekleme döngüsü
+            # Sayfa açılana kadar periyodik polling döngüsü
             while True:
-                elapsed_minutes = (time.time() - session_start_time) / 60
-                # OİS 20 dakikada bir oturumu kapattığı için periyodik yenileme
-                if elapsed_minutes >= 19:
-                    print("[*] 20 dakikalık oturum süresi dolmak üzere. Yeniden giriş yapılacak...")
-                    break
-
-                # Oturum düşerse tekrar baştan giriş yap
+                # Beklenmeyen bir sebeple oturum düşerse döngüden çıkıp yeniden giriş yap
                 if page.locator(sel["username"]).is_visible():
                     print("[-] Oturum düşmüş, tekrar giriş yapılıyor...")
                     break
 
                 is_closed = page.locator(sel["closed_indicator"]).is_visible()
                 
-                # 'Kayıtlar kapalıdır' uyarısı kalktıysa seçim başlamıştır
+                # 'Kayıtlar kapalıdır' uyarısı kalktıysa State Transition gerçekleşmiştir (Slide 54)
                 if not is_closed:
                     print("\n🎉 [!] DİKKAT: Ders kayıt ekranı açıldı!")
                     notify_user("Ders Kayıtları Başladı", "OİS ders seçim ekranı açıldı! Program optimizasyonu başlatılıyor.")
@@ -293,11 +263,11 @@ def start_bot_session():
                     system_opened = True
                     break
                 else:
-                    print(f"[*] Sistem kapalı. (Aktif oturum: {int(elapsed_minutes)} dk.) Sayfa 2 dakika sonra yenilenecek...")
+                    print(f"[*] Sistem kapalı. Sayfa {CHECK_INTERVAL_SECONDS} saniye sonra yenilenecek...")
                     save_state(False)
 
                 time.sleep(CHECK_INTERVAL_SECONDS)
-                print("[*] Ders seçme sayfası yenileniyor (F5)...")
+                print("[*] Ders seçme sayfası yenileniyor (F5) ve oturum canlı tutuluyor...")
                 page.reload()
 
             if system_opened:
@@ -331,7 +301,7 @@ def start_bot_session():
         notify_user("Kayıt Tamamlandı", notify_message)
         time.sleep(2)
         browser.close()
-        
+
 if __name__ == "__main__":
     print("🚀 OİS Otomasyon Botu Başlatıldı...")
     try:
