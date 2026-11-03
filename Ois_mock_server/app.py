@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = "ois_guvenlik_anahtari_123"
 
 # Ders seçim durumu
-SISTEM_ACIK_MI = False
+SISTEM_ACIK_MI = True
 
 EKIP_UYELERI = {
     "2409011013": "sifre1",
